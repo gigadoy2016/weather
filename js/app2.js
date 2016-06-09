@@ -1,0 +1,53 @@
+var app = angular.module('application', ['gm']);
+var weatherData,map;
+
+app.controller('mapController', function($scope,$http) {
+
+  weatherData = $scope;
+  $scope.lat = undefined;
+  $scope.lng = undefined;
+  $scope.captionPlace = "Location.."
+  $scope.places = [{ id:0, caption:"Bangkok",  lat: 0,  lng: 0,}];
+
+
+  $scope.$on('gmPlacesAutocomplete::placeChanged', function(){
+      var location = $scope.autocomplete.getPlace().geometry.location;
+
+      $scope.map = {
+        id      : $scope.id = $scope.places.length,
+        caption : document.getElementById('autocomplete').value,
+        lat     : $scope.lat = location.lat(),
+        lng     : $scope.lng = location.lng()
+      };
+      $scope.captionPlace = map.caption.substring(0,25)+"..";
+
+      $scope.addPlace(map);
+      $scope.loadWeather(map);
+      $scope.$apply();
+  });
+
+  $scope.addPlace = function(map){
+    $scope.places.push(map);
+  }
+  $scope.currentDisplay   = function(data){
+    $scope.currentDate        = data.currently.time * 1000;
+    $scope.currentWeather     = data.currently.summary;
+    $scope.currentWeatherIcon = "img/"+data.currently.icon+'.gif';
+    $scope.currentTemperature = Math.round((data.currently.temperature - 32) * 5/9);
+    //$scope.debug = $scope.daily    = data.daily.data;
+
+  }
+
+  $scope.loadWeather = function(map){
+    var apiKey = 'eca18d5d7064224fe871d0834b2c105d';
+    var url = 'https://api.forecast.io/forecast/';
+    var URL_C = url + apiKey + "/" + map.lat + "," + map.lng + "?callback=?";
+
+    $.getJSON(URL_C, function(data) {
+      $scope.daily = data.daily;
+    });
+
+  }
+
+
+});
